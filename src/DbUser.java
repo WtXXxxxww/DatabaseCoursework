@@ -211,7 +211,15 @@ public class DbUser extends DbBasic {
 			while (rs.next()) {
 				String column = rs.getString("COLUMN_NAME");
 				String type = rs.getString("TYPE_NAME");
-				sb.append("     ").append(column).append(" ").append(type).append(",\n");
+				int nullable = rs.getInt("NULLABLE");
+
+				sb.append("     ").append(column).append(" ").append(type);
+
+				if (nullable == ResultSetMetaData.columnNoNulls) {
+					sb.append(" NOT NULL");
+				}
+
+				sb.append(",\n");
 			}
 
 			sb.append(getPrimaryKeys(tabName));

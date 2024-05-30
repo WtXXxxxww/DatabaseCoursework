@@ -12,11 +12,12 @@ public class AppGUI extends JFrame {
     private JLabel inputDbPathLabel;
     private JLabel outputDbPathLabel;
     private JLabel dbNameLabel;
+    private JLabel imageLabel;
 
     public AppGUI() {
         // Set the frame properties
-        setTitle("My Application");
-        setSize(500, 500);
+        setTitle("DATABASE COURSEWORK");
+        setSize(500, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Create the button
@@ -38,26 +39,29 @@ public class AppGUI extends JFrame {
 
         // Create the text fields
         inputDbPathField = new JTextField();
-        //outputDbPathField = new JTextField();
         dbNameField = new JTextField();
 
         // Create the labels
         inputDbPathLabel = new JLabel("InputDatabase");
-        //outputDbPathLabel = new JLabel("OutputAddress");
         dbNameLabel = new JLabel("DatabaseName");
 
         // Add the button, text area, text fields and labels to the frame
         setLayout(new BorderLayout());
         add(button, BorderLayout.SOUTH);
         add(new JScrollPane(textArea), BorderLayout.CENTER);
-        JPanel northPanel = new JPanel(new GridLayout(3, 2));
+        JPanel northPanel = new JPanel(new GridLayout(2, 2));
         northPanel.add(inputDbPathLabel);
         northPanel.add(inputDbPathField);
-        //northPanel.add(outputDbPathLabel);
-        //northPanel.add(outputDbPathField);
         northPanel.add(dbNameLabel);
         northPanel.add(dbNameField);
         add(northPanel, BorderLayout.NORTH);
+
+        // Create the image icon and label
+        ImageIcon imageIcon = new ImageIcon("src/Background.png");
+        imageLabel = new JLabel(imageIcon);
+
+        // Add the image label to the frame
+        add(imageLabel, BorderLayout.CENTER);
     }
 
     public static void main(String[] args) {

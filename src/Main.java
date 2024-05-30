@@ -20,15 +20,14 @@ public class Main {
 
 		try {
 			writer = new PrintWriter("output.sql");
-			//myDbUser = new DbUser("C:\\Users\\xwt\\Desktop\\大三下\\数据库\\Exercise3\\databases\\University.db",writer);
-			//D:\develop\Java\DatabaseCoursework\TargetDatabases\University.db
-			myDbUser = new DbUser("D:\\develop\\Java\\DatabaseCoursework_RE\\TargetDatabases\\" + inputDbPath +".db",writer);
+			myDbUser = new DbUser("TargetDatabases\\" + inputDbPath +".db",writer);
 
 			//display the database details
 			myDbUser.getDatabaseDetails();
 
 			//get the sorted create table statements
-			//myDbUser.getCreateTableStatementsForAllTables();
+
+			//myDbUser.getCreateTableStatementsForAllTables(); 没有遵守外键约束
 			myDbUser.getSortedTableStatementsForAllTables();
 
 			//get the insert statements
@@ -48,11 +47,10 @@ public class Main {
 			String sqlCommands = new String(Files.readAllBytes(Paths.get("output.sql")));
 
 			// 分割 SQL 命令
-			String[] commands = sqlCommands.split(";");
+			String[] commands = sqlCommands.split(";\n");
 
 			// 创建数据库连接
-			Connection conn = DriverManager.getConnection("jdbc:sqlite:D:\\develop\\Java\\DatabaseCoursework_RE\\"+ databaseName + ".db");
-			//D:\\develop\\Java\\DatabaseCoursework
+			Connection conn = DriverManager.getConnection("jdbc:sqlite:Results\\"+ databaseName + ".db");
 
 			// 创建 Statement 对象
 			Statement stmt = conn.createStatement();
@@ -72,6 +70,7 @@ public class Main {
 
 
 		myDbUser.close();
+		System.out.println("Finished...");
 	}; // end of method "go"
 
 /*public static void main(String [ ] args)
