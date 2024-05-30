@@ -147,7 +147,7 @@ public class DbUser extends DbBasic {
 				for (int i = 1; i <= columnCount; i++) {
 					String value = rs.getString(i);
 					if (rsmd.getColumnType(i) == Types.VARCHAR || rsmd.getColumnType(i) == Types.CHAR) {
-						value = "'" + value + "'";
+						value = "'" + value.replace("'", "''") + "'";  // replace single quote with two single quotes
 					}
 					sb.append(value);
 					if (i < columnCount) {
