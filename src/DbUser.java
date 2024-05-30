@@ -180,6 +180,7 @@ public class DbUser extends DbBasic {
 			ResultSet rs = md.getTables(null, null, "%", types);
 			while (rs.next()) {
 				String tableName = rs.getString(3);
+				//System.out.println("Table: " + tableName); // 调试输出
 				if (tableExists(tableName) && !tableName.startsWith("sqlite_autoindex_")) {
 					getCreateTableStatements(tableName);
 				}
