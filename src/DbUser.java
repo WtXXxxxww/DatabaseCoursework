@@ -1,5 +1,6 @@
-// STUBBED FILE
+import java.io.PrintWriter;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.List;
 
 // this is the class through which all Database calls go
@@ -11,11 +12,14 @@ import java.util.List;
 //后续任务： Unique not null，结果写到SQL文件里, Northwind里面的view，UI
 public class DbUser extends DbBasic {
 
+	private PrintWriter writer;
+
 	/*
 	 * Creates a connection to the named database
 	 */
-	DbUser ( String dbName ) {
+	DbUser ( String dbName, PrintWriter writer ) {
 		super( dbName );
+		this.writer = writer;
 	}
 
 
@@ -36,8 +40,8 @@ public class DbUser extends DbBasic {
 			// Get metadata from the database connection
 			DatabaseMetaData md = con.getMetaData();
 
-			System.out.println();
-			System.out.println("/*-----Database Details------------------------*/");
+			writer.println();
+			writer.println("/*-----Database Details------------------------*/");
 
 			// Call helper method to print general database information
 			printDatabaseInfo(md);
@@ -58,10 +62,10 @@ public class DbUser extends DbBasic {
 	 * @throws SQLException If a database access error occurs.
 	 */
 	private void printDatabaseInfo(DatabaseMetaData md) throws SQLException {
-		System.out.printf("-- Driver Name: %s%n", md.getDriverName());
-		System.out.printf("-- Driver Version: %s%n", md.getDriverVersion());
-		System.out.printf("-- URL: %s%n", md.getURL());
-		System.out.printf("-- User Name: %s%n", md.getUserName());
+		writer.printf("-- Driver Name: %s%n", md.getDriverName());
+		writer.printf("-- Driver Version: %s%n", md.getDriverVersion());
+		writer.printf("-- URL: %s%n", md.getURL());
+		writer.printf("-- User Name: %s%n", md.getUserName());
 	}
 
 	/**
@@ -74,7 +78,7 @@ public class DbUser extends DbBasic {
 	private void printSupportedDataTypes(DatabaseMetaData md) throws SQLException {
 		ResultSet rs = md.getTypeInfo();
 		while (rs.next()) {
-			System.out.printf("-- Supported Type: %s%n", rs.getString("TYPE_NAME"));
+			writer.printf("-- Supported Type: %s%n", rs.getString("TYPE_NAME"));
 		}
 	}
 
@@ -89,8 +93,8 @@ public class DbUser extends DbBasic {
 	 */
 	public void getInsertStatementsForAllTables() {
 		try {
-			System.out.println();
-			System.out.println("/*-----Insert Statements------------------------*/ ");
+			writer.println();
+			writer.println("/*-----Insert Statements------------------------*/ ");
 			String[] types = {"TABLE"};
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getTables(null, null, "%", types);
@@ -151,7 +155,7 @@ public class DbUser extends DbBasic {
 					}
 				}
 				sb.append(");");
-				System.out.println(sb.toString());
+				writer.println(sb.toString());
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -169,8 +173,8 @@ public class DbUser extends DbBasic {
 	 */
 	public void getCreateTableStatementsForAllTables() {
 		try {
-			System.out.println();
-			System.out.println("/*-----Create Table Statements------------------------*/ ");
+			writer.println();
+			writer.println("/*-----Create Table Statements------------------------*/ ");
 			String[] types = {"TABLE"};
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getTables(null, null, "%", types);
@@ -216,7 +220,7 @@ public class DbUser extends DbBasic {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(sb.toString());
+		writer.println(sb.toString());
 	}
 
 	/**
@@ -280,8 +284,8 @@ public class DbUser extends DbBasic {
 	 */
 	public void getCreateIndexStatementsForAllTables() {
 		try {
-			System.out.println();
-			System.out.println("/*-----Create Index Statements------------------------*/ ");
+			writer.println();
+			writer.println("/*-----Create Index Statements------------------------*/ ");
 			String[] types = {"TABLE"};
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getTables(null, null, "%", types);
@@ -303,6 +307,7 @@ public class DbUser extends DbBasic {
 	 *
 	 * The method handles SQLException that might occur during the interaction with the database.
 	 * If an exception occurs, it prints the stack trace to the standard error stream.
+	 * 这段代码会检查索引名称是否已经在indexNames这个HashMap中。如果已经存在，那么就在索引名称后面添加列的名称。这样就可以避免创建同名的索引了。
 	 *
 	 * @param tabName The name of the table for which to generate SQL CREATE INDEX statements.
 	 */
@@ -310,13 +315,21 @@ public class DbUser extends DbBasic {
 		try {
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getIndexInfo(null, null, tabName, false, false);
+			HashMap<String, String> indexNames = new HashMap<>();
 			while (rs.next()) {
 				String indexName = rs.getString("INDEX_NAME");
 				String columnName = rs.getString("COLUMN_NAME");
-				String ascOrDesc = rs.getString("ASC_OR_DESC");
-				String sortOrder = ascOrDesc != null && ascOrDesc.equals("A") ? "ASC" : "DESC";
 				if (indexName != null) {
-					System.out.println("CREATE INDEX " + indexName + " ON " + tabName + " (" + columnName + " " + sortOrder + ");");
+					if (indexName.startsWith("sqlite_autoindex_")) {
+						indexName = indexName.substring("sqlite_autoindex_".length());
+					}
+					if (indexNames.containsKey(indexName)) {
+						indexName += "_" + columnName;
+					}
+					indexNames.put(indexName, columnName);
+					String ascOrDesc = rs.getString("ASC_OR_DESC");
+					String sortOrder = ascOrDesc != null && ascOrDesc.equals("A") ? "ASC" : "DESC";
+					writer.println("CREATE INDEX " + indexName + " ON " + tabName + " (" + columnName + " " + sortOrder + ");");
 				}
 			}
 		} catch (SQLException e) {
@@ -339,8 +352,8 @@ public class DbUser extends DbBasic {
 	 */
 	public void getSortedTableStatementsForAllTables() {
 		try {
-			System.out.println();
-			System.out.println("/*-----Create Sorted Table Statements------------------------*/ ");
+			writer.println();
+			writer.println("/*-----Create Sorted Table Statements------------------------*/ ");
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getTables(null, null, "%", null);
 			TableDependencySorter sorter = new TableDependencySorter();
@@ -365,3 +378,5 @@ public class DbUser extends DbBasic {
 	}
 
 }
+
+
