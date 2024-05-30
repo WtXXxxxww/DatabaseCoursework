@@ -117,8 +117,10 @@ public class DbUser extends DbBasic {
 	 * @throws SQLException If a database access error occurs.
 	 */
 	private boolean tableExists(String tableName) throws SQLException {
+		// Replace spaces in the table name with underscores
+		String safeTableName = tableName.replace(" ", "_");
 		DatabaseMetaData md = con.getMetaData();
-		ResultSet rs = md.getTables(null, null, tableName, null);
+		ResultSet rs = md.getTables(null, null, safeTableName, null);
 		return rs.next();
 	}
 
@@ -180,9 +182,10 @@ public class DbUser extends DbBasic {
 			ResultSet rs = md.getTables(null, null, "%", types);
 			while (rs.next()) {
 				String tableName = rs.getString(3);
-				//System.out.println("Table: " + tableName); // 调试输出
+				// Add double quotes around the table name to handle spaces or special characters
+				String safeTableName = "\"" + tableName + "\"";
 				if (tableExists(tableName) && !tableName.startsWith("sqlite_autoindex_")) {
-					getCreateTableStatements(tableName);
+					getCreateTableStatements(safeTableName);
 				}
 			}
 		} catch (SQLException e) {
@@ -368,11 +371,13 @@ public class DbUser extends DbBasic {
 			TableDependencySorter sorter = new TableDependencySorter();
 			while (rs.next()) {
 				String tableName = rs.getString(3);
+				// Replace spaces in the table name with underscores
+				String safeTableName = tableName.replace(" ", "_");
 				if (tableExists(tableName) && !tableName.startsWith("sqlite_autoindex_")) {
-					ResultSet fk = md.getImportedKeys(null, null, tableName);
+					ResultSet fk = md.getImportedKeys(null, null, safeTableName);
 					while (fk.next()) {
-						String primaryTableName = fk.getString("PKTABLE_NAME");
-						sorter.addDependency(tableName, primaryTableName);
+						String primaryTableName = fk.getString("PKTABLE_NAME").replace(" ", "_");
+						sorter.addDependency(safeTableName, primaryTableName);
 					}
 				}
 

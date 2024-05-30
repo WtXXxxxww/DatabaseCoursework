@@ -27,7 +27,7 @@ public class Main {
 
 			//get the sorted create table statements
 
-			//myDbUser.getCreateTableStatementsForAllTables(); 没有遵守外键约束
+			//myDbUser.getCreateTableStatementsForAllTables(); //没有遵守外键约束
 			myDbUser.getSortedTableStatementsForAllTables();
 
 			//get the insert statements
