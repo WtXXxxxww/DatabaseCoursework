@@ -1,5 +1,6 @@
 import java.io.PrintWriter;
 import java.sql.*;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
@@ -131,6 +132,9 @@ public class DbUser extends DbBasic {
 	 * The method handles SQLException that might occur during the interaction with the database.
 	 * If an exception occurs, it prints the stack trace to the standard error stream.
 	 *
+	 * 如果列的类型是VARCHAR或CHAR，我们就获取列的值，并将单引号替换为两个单引号。
+	 * 如果列的类型是BLOB，我们就获取列的值（作为字节数组），然后使用Base64编码将其转换为字符串。
+	 * 如果列的类型既不是VARCHAR或CHAR，也不是BLOB，我们就直接获取列的值。
 	 * @param tabName The name of the table for which to generate SQL INSERT statements.
 	 */
 	public void getInsertStatements(String tabName) {
@@ -145,9 +149,14 @@ public class DbUser extends DbBasic {
 				sb.append(tabName);
 				sb.append(" VALUES (");
 				for (int i = 1; i <= columnCount; i++) {
-					String value = rs.getString(i);
+					String value;
 					if (rsmd.getColumnType(i) == Types.VARCHAR || rsmd.getColumnType(i) == Types.CHAR) {
-						value = "'" + value.replace("'", "''") + "'";  // replace single quote with two single quotes
+						value = "'" + rs.getString(i).replace("'", "''") + "'";  // replace single quote with two single quotes
+					} else if (rsmd.getColumnType(i) == Types.BLOB) {
+						byte[] bytes = rs.getBytes(i);
+						value = "'" + Base64.getEncoder().encodeToString(bytes) + "'";
+					} else {
+						value = rs.getString(i);
 					}
 					sb.append(value);
 					if (i < columnCount) {
@@ -161,6 +170,7 @@ public class DbUser extends DbBasic {
 			e.printStackTrace();
 		}
 	}
+
 
 	//MilestoneC+D+E: get CREATE TABLE STATEMENTS from a DB
 	/**
