@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 
 public class Main {
@@ -47,7 +48,8 @@ public class Main {
 			String sqlCommands = new String(Files.readAllBytes(Paths.get("output.sql")));
 
 			// 分割 SQL 命令
-			String[] commands = sqlCommands.split(";\n");
+			Pattern pattern = Pattern.compile("(?<=;\\n)|(?<=;\\r)");
+			String[] commands = pattern.split(sqlCommands);
 
 			// 创建数据库连接
 			Connection conn = DriverManager.getConnection("jdbc:sqlite:Results\\"+ databaseName + ".db");
