@@ -1,4 +1,5 @@
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Base64;
 import java.util.HashMap;
@@ -158,8 +159,9 @@ public class DbUser extends DbBasic {
 					if (rsmd.getColumnType(i) == Types.VARCHAR || rsmd.getColumnType(i) == Types.CHAR) {
 						value = "'" + rs.getString(i).replace("'", "''") + "'";  // replace single quote with two single quotes
 					} else if (rsmd.getColumnType(i) == Types.BLOB) {
-						byte[] bytes = rs.getBytes(i);
-						value = "'" + Base64.getEncoder().encodeToString(bytes) + "'";
+						//byte[] bytes = rs.getBytes(i);
+						//value = "'" + new String(bytes, StandardCharsets.UTF_8).replace("'", "''") + "'";  // convert bytes to UTF-8 string
+						value = rs.getString(i);
 					} else {
 						value = rs.getString(i);
 					}
