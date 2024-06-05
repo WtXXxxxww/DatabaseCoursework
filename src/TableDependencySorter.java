@@ -2,6 +2,8 @@ import java.util.*;
 
 /**
  * This class sorts tables based on their dependencies.
+ * 这个类的工作方式是，首先通过addDependency方法添加所有的依赖关系，然后调用sortTables方法进行排序。
+ * 排序的结果是，如果表A依赖于表B，那么在结果列表中，表B会出现在表A之前。
  */
 public class TableDependencySorter {
     private final Map<String, List<String>> adjacencyList = new HashMap<>();

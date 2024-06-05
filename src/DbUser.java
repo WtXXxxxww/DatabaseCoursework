@@ -369,12 +369,15 @@ public class DbUser extends DbBasic {
 				String tableName = rs.getString(3);
 				if (tableExists(tableName) && !tableName.startsWith("sqlite_autoindex_")) {
 					ResultSet fk = md.getImportedKeys(null, null, tableName);
-					while (fk.next()) {
-						String primaryTableName = fk.getString("PKTABLE_NAME");
-						sorter.addDependency(tableName, primaryTableName);
+					if (!fk.next()) {
+						getCreateTableStatements(tableName);
+					} else {
+						do {
+							String primaryTableName = fk.getString("PKTABLE_NAME");
+							sorter.addDependency(tableName, primaryTableName);
+						} while (fk.next());
 					}
 				}
-
 			}
 			List<String> sortedTables = sorter.sortTables();
 			for (String tableName : sortedTables) {
