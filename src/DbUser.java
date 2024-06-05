@@ -102,6 +102,11 @@ public class DbUser extends DbBasic {
 			while (rs.next()) {
 				String tableName = rs.getString(3);
 				if (tableExists(tableName) && !tableName.startsWith("sqlite_autoindex_")) {
+					// Check if tableName contains a space
+					if (tableName.contains(" ")) {
+						// If it does, add double quotes around it
+						tableName = "\"" + tableName + "\"";
+					}
 					getInsertStatements(tableName);
 				}
 			}
@@ -215,9 +220,14 @@ public class DbUser extends DbBasic {
 		try {
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getColumns(null, null, tabName, null);
+			// Check if tableName contains a space
+			if (tabName.contains(" ")) {
+				// If it does, add double quotes around it
+				tabName = "\"" + tabName + "\"";
+			}
 			sb.append("DROP TABLE IF EXISTS ").append(tabName).append(";\n");
 			sb.append("CREATE TABLE IF NOT EXISTS ").append(tabName).append(" (\n");
-
+			tabName = tabName.replace("\"", "");
 			while (rs.next()) {
 				String column = rs.getString("COLUMN_NAME");
 				String type = rs.getString("TYPE_NAME");
@@ -310,6 +320,11 @@ public class DbUser extends DbBasic {
 			while (rs.next()) {
 				String tableName = rs.getString(3);
 				if (tableExists(tableName) && !tableName.startsWith("sqlite_autoindex_")) {
+					// Check if tableName contains a space
+					if (tableName.contains(" ")) {
+						// If it does, add double quotes around it
+						tableName = "\"" + tableName + "\"";
+					}
 					getCreateIndexStatements(tableName);
 				}
 			}
