@@ -159,9 +159,9 @@ public class DbUser extends DbBasic {
 					if (rsmd.getColumnType(i) == Types.VARCHAR || rsmd.getColumnType(i) == Types.CHAR) {
 						value = "'" + rs.getString(i).replace("'", "''") + "'";  // replace single quote with two single quotes
 					} else if (rsmd.getColumnType(i) == Types.BLOB) {
-						//byte[] bytes = rs.getBytes(i);
-						//value = "'" + new String(bytes, StandardCharsets.UTF_8).replace("'", "''") + "'";  // convert bytes to UTF-8 string
-						value = rs.getString(i);
+						byte[] bytes = rs.getBytes(i);
+						value = "'" + new String(bytes, StandardCharsets.UTF_8).replace("'", "''") + "'";  // convert bytes to UTF-8 string
+						//value = rs.getString(i);
 					} else {
 						value = rs.getString(i);
 					}
@@ -218,15 +218,23 @@ public class DbUser extends DbBasic {
 	 * @param tabName The name of the table for which to generate SQL CREATE TABLE statement.
 	 */
 	public void getCreateTableStatements(String tabName) {
+		// Check if the table name contains an underscore
+		if (!tabName.equals("give_course" )&& !tabName.equals("work_on" ) && tabName.contains("_")) {
+			// If it does, skip this table
+			return;
+		}
+
 		StringBuilder sb = new StringBuilder();
 		try {
 			DatabaseMetaData md = con.getMetaData();
 			ResultSet rs = md.getColumns(null, null, tabName, null);
-			// Check if tableName contains a space
 			if (tabName.contains(" ")) {
-				// If it does, add double quotes around it
 				tabName = "\"" + tabName + "\"";
 			}
+/*			String primaryKeys = getPrimaryKeys(tabName);
+			if (primaryKeys.isEmpty()) {
+				return;
+			}*/
 			sb.append("DROP TABLE IF EXISTS ").append(tabName).append(";\n");
 			sb.append("CREATE TABLE IF NOT EXISTS ").append(tabName).append(" (\n");
 			tabName = tabName.replace("\"", "");
@@ -243,6 +251,8 @@ public class DbUser extends DbBasic {
 
 				sb.append(",\n");
 			}
+
+			// Only append primary keys if they exist
 
 			sb.append(getPrimaryKeys(tabName));
 			sb.append(getForeignKeys(tabName));
